@@ -1,0 +1,15 @@
+{
+  "title": "実際の正式タイトルに置き換える",
+  "category": "ANIME",
+  "status": "PLANNED",
+  "sourceUrl": "https://example.com/replace-with-official-announcement",
+  "externalIds": [
+    { "source": "TVMAZE", "externalId": "実在の数値IDに置き換える" }
+  ],
+  "genres": [],
+  "aliases": [],
+  "companies": [],
+  "jpPremiere": null,
+  "schedules": [],
+  "offers": []
+}

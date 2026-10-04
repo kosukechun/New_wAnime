@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.tools/
+.git/
+data/
+backups/
+logs/
+src/generated/
+coverage/
+test-results/
+playwright-report/
+.env*
+package-lock.json
+public/tmdb-logo.svg

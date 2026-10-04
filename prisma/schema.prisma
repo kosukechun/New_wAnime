@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+enum Category {
+  ANIME
+  DOMESTIC_DRAMA
+  FOREIGN_DRAMA
+}
+enum WorkStatus {
+  PLANNED
+  AIRING
+  FINISHED
+  DELAYED
+  UNKNOWN
+}
+enum WatchStatus {
+  INTERESTED
+  PLANNED
+  WATCHING
+  COMPLETED
+  DROPPED
+}
+enum ScheduleKind {
+  TV
+  STREAM
+}
+enum OfferType {
+  SUBSCRIPTION
+  RENT
+  BUY
+  FREE
+  ADS
+  UNKNOWN
+}
+model Work {
+  id              String @id @default(cuid())
+  title           String
+  englishTitle    String?
+  originalTitle   String?
+  originalWorkTitle String?
+  synopsis        String?
+  posterUrl       String?
+  category        Category
+  status          WorkStatus @default(UNKNOWN)
+  worldPremiere   DateTime? @db.Date
+  announcedAt     DateTime? @db.Date
+  jpPremiere      DateTime? @db.Date
+  endDate         DateTime? @db.Date
+  declaredYear    Int?
+  declaredMonth   Int?
+  seasonYear      Int?
+  season          String?
+  sourceMedium    String?
+  installment     String?
+  episodeCount    Int?
+  runtimeMinutes  Int?
+  officialUrl     String?
+  officialX       String?
+  trailerUrl      String?
+  popularity      Float @default(0)
+  metadata        Json?
+  sourceUrl       String
+  sourceName      String
+  confidence      String @default("REFERENCE")
+  checkedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  aliases         WorkAlias[]
+  genres          WorkGenre[]
+  companies       WorkCompany[]
+  externalIds     WorkExternalId[]
+  schedules       Schedule[]
+  offers          StreamingOffer[]
+  credits         Credit[]
+  histories       ChangeHistory[]
+  favorites       Favorite[]
+  @@index([category, jpPremiere])
+  @@index([worldPremiere])
+  @@index([announcedAt])
+  @@index([seasonYear, season])
+  @@index([status])
+  @@index([updatedAt])
+  @@index([title])
+}
+model WorkAlias {
+  id String @id @default(cuid())
+  workId String
+  title String
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  @@unique([workId, title])
+  @@index([title])
+}
+model Genre {
+  id String @id
+  name String @unique
+  works WorkGenre[]
+}
+model WorkGenre {
+  workId String
+  genreId String
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id])
+  @@id([workId, genreId])
+  @@index([genreId])
+}
+model Company {
+  id String @id @default(cuid())
+  name String @unique
+  works WorkCompany[]
+}
+model WorkCompany {
+  workId String
+  companyId String
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id])
+  @@id([workId, companyId])
+}
+model WorkExternalId {
+  source String
+  externalId String
+  workId String
+  fingerprint String?
+  snapshot Json?
+  checkedAt DateTime @default(now())
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  @@id([source, externalId])
+  @@index([workId])
+}
+model Broadcaster {
+  id String @id @default(cuid())
+  name String
+  region String
+  schedules Schedule[]
+  @@unique([name, region])
+}
+model Platform {
+  id String @id
+  name String
+  logoUrl String?
+  offers StreamingOffer[]
+}
+model Schedule {
+  id String @id @default(cuid())
+  workId String
+  source String
+  externalId String
+  kind ScheduleKind
+  region String
+  date DateTime @db.Date
+  time String?
+  weekday Int?
+  instant DateTime?
+  seasonNumber Int?
+  episodeNumber Int?
+  isPremiere Boolean @default(false)
+  broadcasterId String?
+  label String?
+  sourceUrl String
+  checkedAt DateTime @default(now())
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  broadcaster Broadcaster? @relation(fields: [broadcasterId], references: [id])
+  @@unique([source, externalId])
+  @@index([date, region])
+  @@index([workId, isPremiere])
+}
+model StreamingOffer {
+  id String @id @default(cuid())
+  workId String
+  platformId String
+  region String @default("JP")
+  type OfferType
+  startDate DateTime? @db.Date
+  exclusive Boolean?
+  early Boolean?
+  watchUrl String?
+  availabilityUrl String?
+  source String
+  sourceUrl String
+  checkedAt DateTime @default(now())
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  platform Platform @relation(fields: [platformId], references: [id])
+  @@unique([workId, platformId, region, type, source])
+  @@index([platformId, region])
+}
+model Person {
+  id String @id @default(cuid())
+  name String
+  nativeName String?
+  aliases String[]
+  kind String
+  photoUrl String?
+  biography String?
+  birthday DateTime? @db.Date
+  wikipediaUrl String?
+  wikidataId String?
+  wikiCheckedAt DateTime?
+  sourceUrl String
+  checkedAt DateTime @default(now())
+  externalIds PersonExternalId[]
+  credits Credit[]
+  @@index([name])
+  @@index([nativeName])
+}
+model PersonExternalId {
+  source String
+  externalId String
+  personId String
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  @@id([source, externalId])
+  @@index([personId])
+}
+model Credit {
+  id String @id @default(cuid())
+  workId String
+  personId String
+  role String
+  kind String
+  characterImage String?
+  source String
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id])
+  @@unique([workId, personId, role, source])
+  @@index([personId])
+}
+model ChangeHistory {
+  id String @id @default(cuid())
+  workId String
+  source String
+  sourceUrl String
+  changes Json
+  createdAt DateTime @default(now())
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  @@index([workId, createdAt])
+}
+model SyncRun {
+  id String @id @default(cuid())
+  source String
+  status String @default("RUNNING")
+  fetched Int @default(0)
+  created Int @default(0)
+  updated Int @default(0)
+  errors Int @default(0)
+  messages Json?
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  @@index([startedAt])
+}
+model Lease {
+  name String @id
+  owner String
+  expiresAt DateTime
+}
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  passwordHash String
+  role String @default("USER")
+  createdAt DateTime @default(now())
+  sessions Session[]
+  favorites Favorite[]
+}
+model Session {
+  tokenHash String @id
+  userId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+}
+model Favorite {
+  userId String
+  workId String
+  status WatchStatus @default(INTERESTED)
+  memo String @default("")
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  @@id([userId, workId])
+}
+model RateLimit {
+  key String @id
+  count Int
+  expiresAt DateTime
+  @@index([expiresAt])
+}

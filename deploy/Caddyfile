@@ -1,0 +1,17 @@
+{
+  email {$ACME_EMAIL}
+}
+{$DOMAIN} {
+  encode zstd gzip
+  request_body {
+    max_size 100KB
+  }
+  reverse_proxy app:3000 {
+    # 手動収集は長時間かかる。自動更新は別workerで実行。
+    transport http {
+      read_timeout 15m
+      write_timeout 15m
+    }
+  }
+  header Strict-Transport-Security "max-age=31536000"
+}
