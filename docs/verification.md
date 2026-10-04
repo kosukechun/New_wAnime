@@ -29,11 +29,23 @@
 
 画面写真は `test-results/desktop-home.png`、`test-results/mobile-home.png`、`test-results/mobile-viewport.png` に保存します。テスト結果・DB・環境変数はGit対象外です。
 
+### Linux・Dockerの実行結果
+
+[GitHub Actions実行37181217676](https://github.com/kosukechun/New_wAnime/actions/runs/37181217676)で `verify` と `docker` の両ジョブが成功しました。
+
+- Ubuntuで上記27件のテスト、型検査、静的検査、本番ビルドを実行。
+- runtime／operationsのDockerイメージをビルドし、PostgreSQL 18とアプリのコンテナを起動。
+- 実際のHTTPヘルスチェックが成功し、未認証の管理者更新APIが401を返すことを確認。
+- 隔離したテストDBのコンテナを再起動し、volumeの保存内容が残ることを確認。
+- pg_dumpのバックアップを別のテストDBへpg_restoreし、保存内容と3件のマイグレーション履歴を確認。
+
+本番DBに対する復元や公開サーバーへのデプロイは実行していません。
+
 ## 未確認・制限
 
 - TMDB／MALのAPIキーが未提供。接続アダプターは実装済みですが、そのキーを使う実サービス接続、実際の日本Watch Providersの取得は未確認。正規化・検索の動作はAPI形式のfixtureと専用DBで検証。
 - AniListは利用制限を考慮して無効。提供元の許諾が必要。
-- 本PCにDockerがないためローカルでのDocker実行は未実施。GitHub ActionsでLinux Dockerイメージのビルド成功を確認。CIにコンテナ起動、DB再起動後のvolume保持、管理者APIの認証拒否、pg_dump／pg_restoreの復元検査を追加。
+- 本PCにDockerがないためローカルでのDocker実行は未実施。Linux・Dockerでの起動、データ保持、バックアップ復元は上記CIで検証済みです。
 - サーバーIP・DNS・SSHが未提供。インターネットからのHTTPS公開、実スマートフォンからの接続、TLS証明書発行は未実施。
 - PWAのmanifest、service worker、アイコン、モバイル表示を検証。Windowsのブラウザーメニューを使う正式PWAインストールと、実スマートフォンのホーム画面追加は運営者の端末で実施が必要。
 - ネットワーク失敗時には保存済みDBを維持。全作品・公式発表の網羅とリアルタイム更新は保証しない。
