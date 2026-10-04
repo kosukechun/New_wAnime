@@ -50,3 +50,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build --target runtime -t new-wanime:test .
+      - run: docker build --target operations -t new-wanime:operations .
+      - run: bash scripts/docker-smoke.sh

@@ -33,7 +33,7 @@
 
 - TMDB／MALのAPIキーが未提供。接続アダプターは実装済みですが、そのキーを使う実サービス接続、実際の日本Watch Providersの取得は未確認。正規化・検索の動作はAPI形式のfixtureと専用DBで検証。
 - AniListは利用制限を考慮して無効。提供元の許諾が必要。
-- 本PCにDockerがないためDockerイメージのローカル実行、コンテナ再起動時のvolume保持、バックアップ／復元の実行は未確認。CIでLinux Dockerビルドを構成。
+- 本PCにDockerがないためローカルでのDocker実行は未実施。GitHub ActionsでLinux Dockerイメージのビルド成功を確認。CIにコンテナ起動、DB再起動後のvolume保持、管理者APIの認証拒否、pg_dump／pg_restoreの復元検査を追加。
 - サーバーIP・DNS・SSHが未提供。インターネットからのHTTPS公開、実スマートフォンからの接続、TLS証明書発行は未実施。
 - PWAのmanifest、service worker、アイコン、モバイル表示を検証。Windowsのブラウザーメニューを使う正式PWAインストールと、実スマートフォンのホーム画面追加は運営者の端末で実施が必要。
 - ネットワーク失敗時には保存済みDBを維持。全作品・公式発表の網羅とリアルタイム更新は保証しない。
