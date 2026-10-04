@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Film } from "lucide-react";
 import { CATEGORIES, STATUSES, WEEKDAYS } from "@/lib/constants";
 import { dateLabel, isoDate } from "@/lib/dates";
+import { isInKnownBroadcastPeriod } from "@/lib/airing";
 import { FavoriteButton } from "./favorite";
 export type CardWork = {
   id: string;
@@ -12,6 +13,7 @@ export type CardWork = {
   synopsis: string | null;
   jpPremiere: Date | string | null;
   worldPremiere: Date | string | null;
+  endDate?: Date | string | null;
   declaredYear?: number | null;
   declaredMonth?: number | null;
   confidence?: string;
@@ -39,6 +41,7 @@ export function WorkCard({
   const date = w.jpPremiere ?? (schedule?.isPremiere ? schedule.date : null);
   const providers = [...new Set(w.offers.map((o) => o.platform.name))];
   const fallback = isoDate(w.worldPremiere);
+  const inferredAiring = w.status === "UNKNOWN" && isInKnownBroadcastPeriod(w);
   return (
     <article className="work-card">
       <Link href={`/works/${w.id}`} aria-label={`${w.title}の詳細`}>
@@ -57,7 +60,9 @@ export function WorkCard({
             </div>
           )}
           <div className="poster-overlay" />
-          <span className="poster-badge">{STATUSES[w.status]}</span>
+          <span className="poster-badge">
+            {inferredAiring ? "放送中（期間から判定）" : STATUSES[w.status]}
+          </span>
           <span className="poster-date">
             {date
               ? dateLabel(date)

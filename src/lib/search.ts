@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { CATEGORIES, STATUSES, SEASONS } from "./constants";
 import { monthRange, parseDate } from "./dates";
+import { currentlyAiringWhere } from "./airing";
 const num = (min: number, max: number) =>
   z.coerce.number().int().min(min).max(max).optional();
 export const searchSchema = z
@@ -104,10 +105,15 @@ const contains = (value: string) => ({
   contains: value.normalize("NFKC"),
   mode: "insensitive" as const,
 });
-export function buildWorkWhere(f: SearchFilters): Prisma.WorkWhereInput {
+export function buildWorkWhere(
+  f: SearchFilters,
+  today?: string,
+): Prisma.WorkWhereInput {
   const and: Prisma.WorkWhereInput[] = [];
   if (f.category) and.push({ category: f.category });
-  if (f.status) and.push({ status: f.status });
+  if (f.status === "AIRING")
+    and.push(currentlyAiringWhere(today, f.scope, f.region));
+  else if (f.status) and.push({ status: f.status });
   if (f.announced) and.push({ announcedAt: { not: null } });
   if (f.q) {
     const c = contains(f.q.trim());

@@ -1,5 +1,11 @@
 "use client";
-import { useEffect, useRef, useState, useTransition } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { SlidersHorizontal, Search } from "lucide-react";
@@ -33,7 +39,10 @@ export function FilterForm({
         continue;
       if (element === document.activeElement) continue;
       if (element instanceof HTMLInputElement && element.type === "checkbox")
-        element.checked = f.genres.includes(element.value);
+        element.checked =
+          element.id === "f-airing-only"
+            ? f.status === "AIRING"
+            : f.genres.includes(element.value);
       else if (element.name in f)
         element.value = String(f[element.name as keyof SearchFilters] ?? "");
       else if (element.name) element.value = "";
@@ -57,7 +66,20 @@ export function FilterForm({
       router.replace(`${pathname}?${p}`, { scroll: false }),
     );
   }
-  function changed() {
+  function changed(event: FormEvent<HTMLFormElement>) {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.id === "f-airing-only") {
+      const status = form.current?.elements.namedItem("status");
+      if (status instanceof HTMLSelectElement)
+        status.value = target.checked ? "AIRING" : "";
+    } else if (
+      target instanceof HTMLSelectElement &&
+      target.name === "status"
+    ) {
+      const toggle =
+        form.current?.querySelector<HTMLInputElement>("#f-airing-only");
+      if (toggle) toggle.checked = target.value === "AIRING";
+    }
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(apply, 450);
   }
@@ -130,6 +152,22 @@ export function FilterForm({
             />
           </div>
           {select("category", "作品の種類", CATEGORIES, f.category)}
+          <div className="airing-filter">
+            <label className="filter-switch" htmlFor="f-airing-only">
+              <span>放送中のみ</span>
+              <input
+                id="f-airing-only"
+                type="checkbox"
+                role="switch"
+                defaultChecked={f.status === "AIRING"}
+                aria-describedby="airing-filter-help"
+              />
+              <span className="switch-track" aria-hidden="true" />
+            </label>
+            <p id="airing-filter-help" className="muted">
+              オフで絞り込み解除。放送状態を基本に、開始・終了日の両方が分かる未定作品を補完します。
+            </p>
+          </div>
           <div className="field-row">
             <div className="field">
               <label htmlFor="f-year">放送年</label>

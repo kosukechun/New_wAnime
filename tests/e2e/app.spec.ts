@@ -1,4 +1,39 @@
 import { test, expect } from "@playwright/test";
+test("放送中スイッチのオンオフ・URL保持・状態メニュー連動", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/works?genres=fantasy");
+  const toggle = page.getByRole("switch", { name: "放送中のみ", exact: true });
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await expect(page).toHaveURL(/status=AIRING/);
+  await expect(page.getByLabel("放送状態", { exact: true })).toHaveValue(
+    "AIRING",
+  );
+  await expect(page.getByLabel("ファンタジー", { exact: true })).toBeChecked();
+  await expect(page.getByText(/^放送中のみ表示しています/)).toBeVisible();
+  expect(
+    (await request.get("/api/works?status=AIRING&genres=fantasy")).ok(),
+  ).toBe(true);
+  await page.reload();
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
+  await expect(page).not.toHaveURL(/status=AIRING/);
+  await expect(page.getByLabel("放送状態", { exact: true })).toHaveValue("");
+  await page.getByLabel("放送状態", { exact: true }).selectOption("AIRING");
+  await expect(toggle).toBeChecked();
+  await expect(page).toHaveURL(/status=AIRING/);
+  await page.getByLabel("放送状態", { exact: true }).selectOption("FINISHED");
+  await expect(toggle).not.toBeChecked();
+  await expect(page).toHaveURL(/status=FINISHED/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/works");
+  await page.getByRole("button", { name: "検索条件 を開く" }).click();
+  await toggle.check();
+  await expect(page).toHaveURL(/status=AIRING/);
+  await page.screenshot({ path: "test-results/mobile-airing-filter.png" });
+});
 test("一覧・検索・詳細・日本語UI", async ({ page, request }) => {
   await page.goto("/");
   await expect(

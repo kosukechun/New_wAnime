@@ -545,6 +545,65 @@ p {
 .field {
   margin-bottom: 15px;
 }
+.airing-filter {
+  margin-bottom: 18px;
+  padding: 12px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.filter-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.filter-switch input {
+  position: absolute;
+  right: 0;
+  width: 42px;
+  height: 24px;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.switch-track {
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--muted);
+  padding: 3px;
+  pointer-events: none;
+  transition: background 0.2s;
+}
+.switch-track::after {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.filter-switch input:checked + .switch-track {
+  background: var(--accent);
+}
+.filter-switch input:checked + .switch-track::after {
+  transform: translateX(18px);
+}
+.filter-switch input:focus-visible + .switch-track {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.airing-filter p {
+  font-size: 10px;
+  margin: 8px 0 0;
+}
 .field > label {
   display: block;
   color: var(--muted);

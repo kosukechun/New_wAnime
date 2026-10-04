@@ -29,6 +29,12 @@
 
 画面写真は `test-results/desktop-home.png`、`test-results/mobile-home.png`、`test-results/mobile-viewport.png` に保存します。テスト結果・DB・環境変数はGit対象外です。
 
+### 放送中フィルターの追加改修
+
+検索メニューに「放送中のみ」のオン／オフスイッチを追加。放送状態のプルダウンと連動し、共有URLと再読み込みで状態を保持します。開始日だけでは放送中を推測せず、未定作品は開始・終了日がそろう場合に補完します。推定結果にはカードで「放送中（期間から判定）」を表示します。
+
+追加後はWindowsで単体23件、DB統合4件、Edge E2E6件の合計33件、本番ビルド・型検査・静的検査が成功。終了・延期・予定の明示状態、未来の日本開始日、終了日当日の境界、日付未確認を含む10パターンを実DBで確認しました。390px幅のスマートフォン画面でもスイッチ操作を確認し、`test-results/mobile-airing-filter.png` に保存しています。
+
 ### Linux・Dockerの実行結果
 
 [GitHub Actions実行37181217676](https://github.com/kosukechun/New_wAnime/actions/runs/37181217676)で `verify` と `docker` の両ジョブが成功しました。

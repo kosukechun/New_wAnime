@@ -135,3 +135,112 @@ it("DBのユーザー単位でマイリストを分離する", async () => {
     await db.user.deleteMany({ where: { id: { in: users.map((u) => u.id) } } });
   }
 });
+it("放送中のみ検索は明示状態・日付境界を守り、情報不足では推測しない", async () => {
+  const cases = [
+    {
+      key: "explicit",
+      status: "AIRING",
+      jpPremiere: "2026-09-01",
+      endDate: null,
+      included: true,
+    },
+    {
+      key: "unknown-dates",
+      status: "AIRING",
+      jpPremiere: null,
+      endDate: null,
+      included: true,
+    },
+    {
+      key: "future",
+      status: "AIRING",
+      jpPremiere: "2026-10-05",
+      endDate: null,
+      included: false,
+    },
+    {
+      key: "expired",
+      status: "AIRING",
+      jpPremiere: "2026-09-01",
+      endDate: "2026-10-03",
+      included: false,
+    },
+    {
+      key: "estimated",
+      status: "UNKNOWN",
+      jpPremiere: "2026-10-04",
+      endDate: "2026-10-04",
+      included: true,
+    },
+    {
+      key: "start-only",
+      status: "UNKNOWN",
+      jpPremiere: "2020-01-01",
+      endDate: null,
+      included: false,
+    },
+    {
+      key: "finished",
+      status: "FINISHED",
+      jpPremiere: "2026-09-01",
+      endDate: "2026-12-01",
+      included: false,
+    },
+    {
+      key: "delayed",
+      status: "DELAYED",
+      jpPremiere: "2026-09-01",
+      endDate: "2026-12-01",
+      included: false,
+    },
+    {
+      key: "planned",
+      status: "PLANNED",
+      jpPremiere: "2026-09-01",
+      endDate: "2026-12-01",
+      included: false,
+    },
+    {
+      key: "japan-future",
+      status: "AIRING",
+      jpPremiere: "2026-10-05",
+      worldPremiere: "2026-09-01",
+      endDate: null,
+      included: false,
+    },
+  ] as const;
+  const works = await Promise.all(
+    cases.map((c) =>
+      db.work.create({
+        data: {
+          title: `DBテスト-${id}-airing-${c.key}`,
+          category: "ANIME",
+          status: c.status,
+          sourceUrl: "https://example.com/test-fixture",
+          sourceName: "TEST",
+          jpPremiere: c.jpPremiere ? new Date(c.jpPremiere) : null,
+          worldPremiere:
+            "worldPremiere" in c ? new Date(c.worldPremiere) : null,
+          endDate: c.endDate ? new Date(c.endDate) : null,
+        },
+      }),
+    ),
+  );
+  const result = await db.work.findMany({
+    where: {
+      AND: [
+        { id: { in: works.map((w) => w.id) } },
+        buildWorkWhere(
+          parseSearch(new URLSearchParams("status=AIRING")),
+          "2026-10-04",
+        ),
+      ],
+    },
+  });
+  expect(result.map((w) => w.title).sort()).toEqual(
+    cases
+      .filter((c) => c.included)
+      .map((c) => `DBテスト-${id}-airing-${c.key}`)
+      .sort(),
+  );
+});

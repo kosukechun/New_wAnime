@@ -126,6 +126,11 @@ export default async function WorksPage({
               </Link>
             </div>
           )}
+          {f.status === "AIRING" && (
+            <div className="notice" style={{ marginBottom: 20 }}>
+              放送中のみ表示しています。取得元の放送状態を基本に、未定作品は確認済みの開始・終了期間で判定します。未来の開始日や過去の終了日が分かる作品は除外します。日本での放送が未確認の海外作品は、取得元の放送状態を使用します。
+            </div>
+          )}
           {works.length ? (
             <WorkGrid
               works={works}
